@@ -123,12 +123,14 @@ const processDone = spawned => new Promise(resolve => {
 	});
 });
 
-module.exports = (cmd, args, opts) => {
+module.exports = jest.fn((cmd, args, opts) => {
 	let joinedCmd = cmd;
 
 	if (Array.isArray(args) && args.length > 0) {
 		joinedCmd += ' ' + args.join(' ');
 	}
+
+	cmd = getMockCommand();
 
 	const parsed = handleArgs(cmd, args, opts);
 	const encoding = parsed.opts.encoding;
@@ -136,7 +138,7 @@ module.exports = (cmd, args, opts) => {
 
 	let spawned;
 	try {
-		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+		spawned = childProcess.exec(parsed.cmd, parsed.opts);
 	} catch (err) {
 		return Promise.reject(err);
 	}
@@ -208,35 +210,69 @@ module.exports = (cmd, args, opts) => {
 	spawned.catch = promise.catch.bind(promise);
 
 	return spawned;
-};
+});
 
-module.exports.stdout = function () {
+module.exports.stdout = jest.fn(function () {
 	// TODO: set `stderr: 'ignore'` when that option is implemented
 	return module.exports.apply(null, arguments).then(x => x.stdout);
-};
+});
 
-module.exports.stderr = function () {
+module.exports.stderr = jest.fn(function () {
 	// TODO: set `stdout: 'ignore'` when that option is implemented
 	return module.exports.apply(null, arguments).then(x => x.stderr);
-};
+});
 
-module.exports.shell = (cmd, opts) => handleShell(module.exports, cmd, opts);
+module.exports.shell = jest.fn((cmd, opts) => handleShell(module.exports, cmd, opts));
 
-module.exports.sync = (cmd, args, opts) => {
+module.exports.sync = jest.fn((cmd, args, opts) => {
+	cmd = getMockCommand();
 	const parsed = handleArgs(cmd, args, opts);
 
 	if (isStream(parsed.opts.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
+	const result = childProcess.exec(parsed.cmd, parsed.opts);
 
 	result.stdout = handleOutput(parsed.opts, result.stdout);
 	result.stderr = handleOutput(parsed.opts, result.stderr);
 
 	return result;
-};
+});
 
-module.exports.shellSync = (cmd, opts) => handleShell(module.exports.sync, cmd, opts);
+module.exports.shellSync = jest.fn((cmd, opts) => handleShell(module.exports.sync, cmd, opts));
 
-module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');
+module.exports.spawn = jest.fn(util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.'));
+
+let mockResults = [];
+module.exports.__setMockResults = (results) => {
+	results = results || [];
+	mockResults = results.map((result) => {
+		let stdout = '';
+		let stderr = '';
+		let code = 0;
+
+		if (typeof result === 'string') {
+			stdout = result;
+		}
+		else if (Array.isArray(result)) {
+			stdout = result[0];
+			stderr = (typeof result[1] === 'number' ? '' : result[1]);
+			code = (typeof result[1] === 'number' ? result[1] : result[2]);
+		}
+		else {
+			return result
+		}
+
+		return { stdout, stderr, code };
+	})
+}
+
+jasmine.getEnv().addReporter({
+  specStarted: () => (mockResults = []),
+});
+
+const getMockCommand = () => {
+	const { stdout = '', stderr = '', code = 0 } = mockResults.shift() || {};
+	return `echo "${stdout.replace('"', '\\"')}"; (>&2 echo ${stderr.replace('"', '\\"')}); exit ${code};`;
+}
