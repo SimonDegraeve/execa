@@ -1,3 +1,27 @@
+# OS Specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE Specific
+nbproject
+.~lock.*
+.buildpath
+.idea
+.project
+.settings
+composer.lock
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Project Specific
 node_modules
-.nyc_output
+*.log
+lib
 coverage
