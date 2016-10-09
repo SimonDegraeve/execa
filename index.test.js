@@ -77,7 +77,17 @@ describe('Mock', () => {
 
   it('spies on methods', () => {
     return execa.stdout('echo', ['ok']).then(() => {
-      expect(execa).toHaveBeenLastCalledWith('echo', ['ok'])
+      expect(execa).toHaveBeenLastCalledWith('echo', ['ok']);
     });
+  });
+
+  it('cache the results', () => {
+    execa.__setMockResults(['ok']);
+  });
+
+  it('flush the results between tests', () => {
+    return execa('echo', ['ok']).then(result =>
+      expect(result.stdout).toBe('')
+    );
   });
 });
