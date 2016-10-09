@@ -1,4 +1,4 @@
-const execa = require('execa')
+const execa = require('execa');
 
 describe('Mock', () => {
   it('works with no results', () => {
@@ -16,7 +16,7 @@ describe('Mock', () => {
   });
 
   it('works with results as string', () => {
-    execa.__setMockResults(['stdout'])
+    execa.__setMockResults(['stdout']);
     return execa('echo', ['ok']).then(result =>
       expect(result).toEqual({
         stdout: 'stdout',
@@ -31,7 +31,7 @@ describe('Mock', () => {
   });
 
   it('works with results as array', () => {
-    execa.__setMockResults([['stdout']])
+    execa.__setMockResults([['stdout']]);
     return execa('echo', ['ok']).then(result =>
       expect(result).toEqual({
         stdout: 'stdout',
@@ -46,7 +46,7 @@ describe('Mock', () => {
   });
 
   it('works with results as array with error', () => {
-    execa.__setMockResults([['stdout', 2]])
+    execa.__setMockResults([['stdout', 2]]);
     return execa('echo', ['ok']).catch(error => {
       expect(error.message).toMatch(/Command failed: echo ok/);
       expect(error.stdout).toMatch(/stdout/);
@@ -56,7 +56,7 @@ describe('Mock', () => {
   });
 
   it('works with results as array with error and error output', () => {
-    execa.__setMockResults([['stdout', 'stderr', 2]])
+    execa.__setMockResults([['stdout', 'stderr', 2]]);
     return execa('echo', ['ok']).catch(error => {
       expect(error.message).toMatch(/Command failed: echo ok/);
       expect(error.stdout).toMatch(/stdout/);
@@ -66,7 +66,7 @@ describe('Mock', () => {
   });
 
   it('works with results as object', () => {
-    execa.__setMockResults([{ stdout: 'stdout', stderr: 'stderr', code: 2}])
+    execa.__setMockResults([{ stdout: 'stdout', stderr: 'stderr', code: 2 }]);
     return execa('echo', ['ok']).catch(error => {
       expect(error.message).toMatch(/Command failed: echo ok/);
       expect(error.stdout).toMatch(/stdout/);

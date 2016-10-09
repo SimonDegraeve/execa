@@ -245,8 +245,10 @@ module.exports.shellSync = jest.fn((cmd, opts) => handleShell(module.exports.syn
 module.exports.spawn = jest.fn(util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.'));
 
 let mockResults = [];
+
 module.exports.__setMockResults = (results) => {
 	results = results || [];
+
 	mockResults = results.map((result) => {
 		let stdout = '';
 		let stderr = '';
@@ -261,7 +263,7 @@ module.exports.__setMockResults = (results) => {
 			code = (typeof result[1] === 'number' ? result[1] : result[2]);
 		}
 		else {
-			return result
+			return result;
 		}
 
 		return { stdout, stderr, code };
